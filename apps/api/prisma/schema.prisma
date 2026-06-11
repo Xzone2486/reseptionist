@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum SlotStatus {
+  available
+  held
+  booked
+  cancelled
+}
+
+enum CampaignStatus {
+  draft
+  running
+  paused
+  completed
+  stopped
+}
+
+enum CallStatus {
+  queued
+  dialing
+  answered
+  appointment_requested
+  appointment_booked
+  follow_up_needed
+  pending
+  calling
+  completed
+  failed
+  retry_scheduled
+  booked
+  declined
+  no_answer
+  busy
+  do_not_call
+  wrong_number
+}
+
+enum AppointmentStatus {
+  booked
+  cancelled
+  completed
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Lead {
+  id          String        @id @default(uuid())
+  name        String?
+  phone       String        @unique
+  email       String?
+  source      String        @default("website")
+  status      CallStatus    @default(queued)
+  appointmentReason String?
+  department  String?
+  preferredDate String?
+  preferredTime String?
+  notes       String?
+  doNotCall   Boolean       @default(false)
+  needsHumanFollowup Boolean @default(false)
+  handoffReason String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  campaigns   CampaignLead[]
+  attempts    CallAttempt[]
+  appointments Appointment[]
+}
+
+model AppointmentSlot {
+  id          String       @id @default(uuid())
+  externalId  String       @unique
+  doctorName  String
+  department  String
+  date        DateTime
+  startTime   String
+  endTime     String
+  status      SlotStatus   @default(available)
+  holdExpiresAt DateTime?
+  heldByLeadId String?
+  source      String       @default("file")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  appointment Appointment?
+}
+
+model Appointment {
+  id          String            @id @default(uuid())
+  leadId      String?
+  slotId      String            @unique
+  patientName String
+  phone       String
+  email       String?
+  reason      String
+  confirmationEmailSent Boolean @default(false)
+  confirmationEmailSentAt DateTime?
+  status      AppointmentStatus @default(booked)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  lead        Lead?             @relation(fields: [leadId], references: [id])
+  slot        AppointmentSlot   @relation(fields: [slotId], references: [id])
+}
+
+model CallCampaign {
+  id          String          @id @default(uuid())
+  name        String
+  status      CampaignStatus  @default(draft)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  leads       CampaignLead[]
+  attempts    CallAttempt[]
+}
+
+model CampaignLead {
+  id         String       @id @default(uuid())
+  campaignId String
+  leadId     String
+  campaign   CallCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  lead       Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, leadId])
+}
+
+model CallAttempt {
+  id             String             @id @default(uuid())
+  leadId         String
+  campaignId     String?
+  status         CallStatus         @default(queued)
+  attemptNumber  Int                @default(1)
+  callingProvider String            @default("mock")
+  providerCallId String?            @unique
+  roomName       String?
+  failureReason  String?
+  durationSeconds Int?
+  recordingUrl   String?
+  cost           Decimal?
+  answeredByMachine Boolean?
+  scheduledFor   DateTime?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  lead           Lead               @relation(fields: [leadId], references: [id])
+  campaign       CallCampaign?      @relation(fields: [campaignId], references: [id])
+  transcript     CallTranscript?
+  extractedData  ExtractedCallData?
+  retryJobs      RetryJob[]
+}
+
+model CallTranscript {
+  id            String      @id @default(uuid())
+  callAttemptId String      @unique
+  turns         Json        @default("[]")
+  summary       String?
+  createdAt     DateTime    @default(now())
+  callAttempt   CallAttempt @relation(fields: [callAttemptId], references: [id], onDelete: Cascade)
+}
+
+model ExtractedCallData {
+  id            String      @id @default(uuid())
+  callAttemptId String      @unique
+  patientName   String?
+  phone         String?
+  preferredDate String?
+  preferredTime String?
+  department    String?
+  reason        String?
+  confirmed     Boolean     @default(false)
+  raw           Json        @default("{}")
+  callAttempt   CallAttempt @relation(fields: [callAttemptId], references: [id], onDelete: Cascade)
+}
+
+model RetryJob {
+  id            String      @id @default(uuid())
+  leadId        String
+  callAttemptId String?
+  reason        String
+  scheduledFor  DateTime
+  status        String      @default("scheduled")
+  createdAt     DateTime    @default(now())
+  callAttempt   CallAttempt? @relation(fields: [callAttemptId], references: [id], onDelete: SetNull)
+}
+
+model WebhookEvent {
+  id          String   @id @default(uuid())
+  provider    String
+  eventId     String
+  eventType   String?
+  receivedAt  DateTime @default(now())
+  processedAt DateTime?
+  payload     Json
+
+  @@unique([provider, eventId])
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

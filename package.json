@@ -1,0 +1,28 @@
+{
+  "name": "doctor-voice-receptionist",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev --workspace @receptionist/api\" \"npm:dev --workspace @receptionist/web\"",
+    "dev:full": "concurrently \"npm:dev --workspace @receptionist/api\" \"npm:dev --workspace @receptionist/web\" \"npm:dev --workspace @receptionist/voice-agent\"",
+    "dev:voice": "npm run dev --workspace @receptionist/voice-agent",
+    "build": "npm run build -w @receptionist/shared && npm run build -w @receptionist/api && npm run build -w @receptionist/web && npm run build -w @receptionist/voice-agent",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "db:migrate": "npm run prisma:migrate --workspace @receptionist/api",
+    "db:seed": "npm run seed --workspace @receptionist/api"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+  "postcss": "8.5.15",
+  "uuid": "11.1.1"
+}
+}

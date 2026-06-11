@@ -1,0 +1,26 @@
+{
+  "name": "@receptionist/voice-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "setup:vobiz-trunk": "tsx src/setup-vobiz-trunk.ts",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@receptionist/shared": "0.1.0",
+    "bullmq": "^5.58.5",
+    "dotenv": "^17.2.2",
+    "livekit-server-sdk": "^2.15.4",
+    "pino": "^9.9.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "vitest": "^3.2.4"
+  }
+}

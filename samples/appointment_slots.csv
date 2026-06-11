@@ -1,0 +1,6 @@
+slot_id,doctor_name,department,date,start_time,end_time,status
+SLOT-1001,Dr. Meera Shah,General Medicine,2026-06-15,10:00,10:30,available
+SLOT-1002,Dr. Meera Shah,General Medicine,2026-06-15,10:30,11:00,available
+SLOT-2001,Dr. Arjun Rao,Dermatology,2026-06-16,14:00,14:30,available
+SLOT-3001,Dr. Kavita Menon,Cardiology,2026-06-17,12:00,12:30,blocked
+
