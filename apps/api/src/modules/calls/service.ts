@@ -110,13 +110,32 @@ export async function saveTranscript(attemptId: string, body: any) {
     create: { callAttemptId: attemptId, turns: body.turns || [], summary: body.summary }
   });
   if (body.extractedData) {
+    const extractedData = sanitizeExtractedData(body.extractedData);
     await prisma.extractedCallData.upsert({
       where: { callAttemptId: attemptId },
-      update: { ...body.extractedData, raw: body.extractedData },
-      create: { callAttemptId: attemptId, ...body.extractedData, raw: body.extractedData }
+      update: extractedData,
+      create: { callAttemptId: attemptId, ...extractedData }
     });
   }
   return { ok: true };
+}
+
+function optionalString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function sanitizeExtractedData(input: any) {
+  return {
+    patientName: optionalString(input.patientName),
+    phone: optionalString(input.phone),
+    email: optionalString(input.email),
+    preferredDate: optionalString(input.preferredDate),
+    preferredTime: optionalString(input.preferredTime),
+    department: optionalString(input.department),
+    reason: optionalString(input.reason),
+    confirmed: typeof input.confirmed === "boolean" ? input.confirmed : undefined,
+    raw: input.raw ?? input
+  };
 }
 
 export async function scheduleRetry(

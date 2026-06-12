@@ -178,6 +178,7 @@ model ExtractedCallData {
   callAttemptId String      @unique
   patientName   String?
   phone         String?
+  email         String?
   preferredDate String?
   preferredTime String?
   department    String?

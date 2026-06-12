@@ -33,6 +33,8 @@ const envSchema = z.object({
   OUTBOUND_TRUNK_ID: z.string().optional(),
   VOBIZ_WEBHOOK_SECRET: z.string().optional(),
   VOICE_AGENT_SERVICE_TOKEN: z.string().default("dev-voice-agent-token"),
+  EMAIL_PROVIDER: z.enum(["mock", "gmail"]).default("gmail"),
+  MOCK_EMAIL_MODE: z.coerce.boolean().default(false),
   GMAIL_CREDENTIALS_FILE: z.string().optional(),
   GMAIL_TOKEN_FILE: z.string().optional()
 });

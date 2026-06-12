@@ -57,12 +57,24 @@ export class VobizSipCallingProvider implements CallingProvider {
     const dispatch = await dispatchClient.createDispatch(roomName, config.LIVEKIT_AGENT_NAME, {
       metadata: JSON.stringify(metadata)
     });
-    const participant = await sipClient.createSipParticipant(config.OUTBOUND_TRUNK_ID, phone, roomName, {
-      participantIdentity,
-      participantMetadata: JSON.stringify(metadata),
-      waitUntilAnswered: true,
-      timeout: 60
-    });
+    const participant = await sipClient.createSipParticipant(
+      config.OUTBOUND_TRUNK_ID,
+      phone,
+      roomName,
+      {
+        participantIdentity,
+        participantName: "Patient",
+        participantMetadata: JSON.stringify({
+          lead_id: input.leadId,
+          campaign_id: input.campaignId,
+          call_attempt_id: input.attemptId
+        }),
+        waitUntilAnswered: false,
+        timeout: 10,
+        ringingTimeout: 45,
+        playDialtone: true
+      }
+    );
 
     return {
       callingProvider: "vobiz_sip" as const,

@@ -32,12 +32,17 @@ export async function runMockSession(input: { leadId: string; attemptId: string 
     reason: "Fever"
   });
   try {
-    await toolsClient.sendConfirmationEmail({
+    const emailResult: any = await toolsClient.sendConfirmationEmail({
       appointment_id: appointment.id,
       email: "demo.patient@example.com",
       consent_confirmed: true
     });
-    turns.push({ speaker: "assistant", text: "Done, maine confirmation email bhej diya hai. Please appointment se 10-15 minutes pehle aa jaiyega." });
+    turns.push({
+      speaker: "assistant",
+      text: emailResult.emailSent
+        ? "Done, maine confirmation email bhej diya hai. Please appointment se 10-15 minutes pehle aa jaiyega."
+        : "Appointment confirm hai. Email local mock mode mein log ho gaya hai, real Gmail send nahi hua."
+    });
   } catch {
     turns.push({ speaker: "assistant", text: "Email abhi send nahi ho paya, but appointment confirm hai. Clinic team details share kar degi." });
   }

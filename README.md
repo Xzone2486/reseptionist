@@ -21,6 +21,8 @@ Use these local database values:
 ```env
 DATABASE_URL="postgresql://receptionist:receptionist123@localhost:5432/receptionist?schema=public"
 REDIS_URL="redis://localhost:6379"
+EMAIL_PROVIDER=mock
+MOCK_EMAIL_MODE=true
 ```
 
 First-time setup:
@@ -86,6 +88,15 @@ npm run local:db:reset
 npm run db:migrate
 npm run db:seed
 ```
+
+For local call testing, keep email in mock mode:
+
+```env
+EMAIL_PROVIDER=mock
+MOCK_EMAIL_MODE=true
+```
+
+Mock email mode logs the confirmation email payload and does not call Gmail. Real Gmail delivery requires valid OAuth credentials and a valid refresh token in `GMAIL_CREDENTIALS_FILE` and `GMAIL_TOKEN_FILE`. Gmail `invalid_grant` means the refresh token expired, was revoked, or belongs to a different OAuth client; the appointment stays booked, but the email is reported as not sent.
 
 ## Mock Flow
 

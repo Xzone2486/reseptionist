@@ -41,6 +41,15 @@ function formatAppointmentDate(value: Date) {
   return value.toISOString().slice(0, 10);
 }
 
+function isGmailInvalidGrant(error: unknown) {
+  const err = error as { message?: string; response?: { data?: { error?: string; error_description?: string } } };
+  return (
+    err.response?.data?.error === "invalid_grant" ||
+    err.message?.includes("invalid_grant") ||
+    err.response?.data?.error_description?.includes("expired or revoked")
+  );
+}
+
 export async function sendAppointmentConfirmationEmail(appointmentId: string, requestedEmail?: string, consentConfirmed = false) {
   if (!consentConfirmed) throw new AppError(400, "email_consent_required");
   const appointment = await prisma.appointment.findUnique({
@@ -53,7 +62,6 @@ export async function sendAppointmentConfirmationEmail(appointmentId: string, re
   if (!to) throw new AppError(400, "appointment_email_missing");
 
   const settings = await getSettings();
-  const gmail = createGmailClient();
   const subject = `Appointment confirmed - ${settings.clinicName}`;
   const date = formatAppointmentDate(appointment.slot.date);
   const body = [
@@ -80,10 +88,28 @@ export async function sendAppointmentConfirmationEmail(appointmentId: string, re
     body
   ].join("\r\n"));
 
-  await gmail.users.messages.send({
-    userId: "me",
-    requestBody: { raw }
-  });
+  if (config.EMAIL_PROVIDER === "mock" || config.MOCK_EMAIL_MODE) {
+    console.info("Mock confirmation email", {
+      appointmentId: appointment.id,
+      to,
+      subject
+    });
+    return { ok: true, emailSent: false, mock: true };
+  }
+
+  try {
+    const gmail = createGmailClient();
+    await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw }
+    });
+  } catch (error) {
+    if (isGmailInvalidGrant(error)) {
+      console.error("Gmail OAuth token invalid_grant. Refresh token is expired, revoked, or belongs to a mismatched OAuth client.");
+      return { ok: false, emailSent: false, reason: "gmail_token_invalid" };
+    }
+    throw error;
+  }
 
   const updated = await prisma.appointment.update({
     where: { id: appointment.id },
@@ -97,6 +123,5 @@ export async function sendAppointmentConfirmationEmail(appointmentId: string, re
   if (appointment.leadId) {
     await prisma.lead.update({ where: { id: appointment.leadId }, data: { email: to } });
   }
-  return { sent: true, appointment: updated };
+  return { ok: true, emailSent: true, appointment: updated };
 }
-
