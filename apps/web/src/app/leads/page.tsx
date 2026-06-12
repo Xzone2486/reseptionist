@@ -130,7 +130,7 @@ export default function LeadsPage() {
     setMessage(null);
     try {
       await api(`/leads/${id}/call-now`, { method: "POST", body: JSON.stringify({}) });
-      setMessage({ type: "success", text: "Call queued. Mock mode will create a transcript/status through the voice worker." });
+      setMessage({ type: "success", text: "Call queued. The voice worker will start the configured outbound call." });
       await refresh();
     } catch (error) {
       setMessage({ type: "error", text: error instanceof Error ? error.message : "Could not create call." });

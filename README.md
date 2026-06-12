@@ -8,30 +8,84 @@ Production-oriented outbound AI receptionist for doctor appointment booking. It 
 - Fastify, Prisma, PostgreSQL API
 - Redis and BullMQ background jobs
 - Separate voice-agent worker
-- Vobiz SIP through LiveKit and Vobiz Voice API provider seams
+- Vobiz SIP through LiveKit
 - Deepgram, Groq, and Cartesia provider stubs for live mode
 - CSV and Excel slot import
 
-## Local Setup
+## Running Locally
+
+Local development uses the root `.env` as the single source of truth. If `apps/api/.env` exists, keep its database values identical to the root `.env`.
+
+Use these local database values:
+
+```env
+DATABASE_URL="postgresql://receptionist:receptionist123@localhost:5432/receptionist?schema=public"
+REDIS_URL="redis://localhost:6379"
+```
+
+First-time setup:
 
 ```bash
 cp .env.example .env
 npm install
-docker compose up -d postgres redis
+npm run local:db:reset
 npm run db:migrate
 npm run db:seed
-npm run dev
 ```
 
-Open:
+Run each service in a separate terminal from the project root:
+
+Terminal 1:
+
+```bash
+docker compose up -d postgres redis
+```
+
+Terminal 2:
+
+```bash
+npm run dev -w @receptionist/api
+```
+
+Terminal 3:
+
+```bash
+npm run dev -w @receptionist/web
+```
+
+Terminal 4:
+
+```bash
+npm run dev -w @receptionist/voice-agent
+```
+
+Local URLs:
 
 - Web: `http://localhost:3000`
+- API: `http://localhost:4000`
 - API health: `http://localhost:4000/health`
 
 Seeded login:
 
 - Email: `admin@clinic.local` #receptionist
 - Password: `ChangeMe123!`    #receptionist123
+
+If database authentication fails, an old Docker volume may still contain the previous `postgres:postgres` credentials. Remove the volume and recreate the database:
+
+```bash
+docker compose down -v
+docker compose up -d postgres redis
+npm run db:migrate
+npm run db:seed
+```
+
+The shortcut is:
+
+```bash
+npm run local:db:reset
+npm run db:migrate
+npm run db:seed
+```
 
 ## Mock Flow
 
@@ -48,8 +102,12 @@ npm run dev
 npm run build
 npm run test
 npm run lint
+npm run db:generate
 npm run db:migrate
 npm run db:seed
+npm run db:reset
+npm run local:db:up
+npm run local:db:reset
 ```
 
 ## Live Calling
@@ -60,7 +118,6 @@ Allowed calling providers:
 
 - `mock`
 - `vobiz_sip`
-- `vobiz_api`
 
 For Vobiz SIP mode, Vobiz handles the PSTN/SIP trunk while LiveKit, Deepgram, Groq, and Cartesia handle realtime AI. Set:
 
@@ -78,14 +135,7 @@ For Vobiz SIP mode, Vobiz handles the PSTN/SIP trunk while LiveKit, Deepgram, Gr
 - `CARTESIA_API_KEY`
 - `CARTESIA_VOICE_ID`
 
-For Vobiz Voice API mode, set:
-
-- `VOBIZ_AUTH_ID`
-- `VOBIZ_AUTH_TOKEN`
-- `VOBIZ_CALLER_ID`
-- `VOBIZ_WEBHOOK_SECRET`
-
-The provider adapter is isolated in `services/voice-agent/src/providers/calling-provider.ts`; add or adjust Vobiz-specific request details there without changing campaign or booking logic.
+The provider adapter is isolated in `services/voice-agent/src/providers/calling-provider.ts`; add or adjust SIP-specific details there without changing campaign or booking logic.
 
 Create the LiveKit outbound SIP trunk from Vobiz credentials:
 

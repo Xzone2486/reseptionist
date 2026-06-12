@@ -31,7 +31,6 @@ Calling provider modes:
 
 - `mock`: no real call is placed; campaign, booking, transcript, retry, and extracted-data flows are simulated.
 - `vobiz_sip`: Vobiz provides SIP/PSTN trunking while LiveKit runs the realtime AI room with Deepgram, Groq, and Cartesia.
-- `vobiz_api`: `VobizApiCallingProvider` starts calls through Vobiz's outbound API and the API receives Vobiz call webhooks.
 
 Live provider notes:
 
@@ -39,4 +38,3 @@ Live provider notes:
 - Groq should receive the system prompt plus tool definitions.
 - Cartesia should stream TTS and stop immediately on LiveKit interruption/barge-in.
 - Call end and SIP failure events should post to `/api/webhooks/calls/:id/outcome`.
-- Vobiz API events should post to `/api/webhooks/vobiz/calls`.

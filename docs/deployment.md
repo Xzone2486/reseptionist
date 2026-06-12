@@ -38,7 +38,7 @@ Trial-friendly mock testing:
 6. Upload `samples/appointment_slots.csv` and `samples/leads.csv`.
 7. Create a campaign, start it, and verify call attempts, transcripts, extracted data, and bookings.
 
-When ready for real outbound calls, choose `CALLING_PROVIDER=vobiz_sip` or `CALLING_PROVIDER=vobiz_api`, set `MOCK_CALL_MODE=false`, add the required Vobiz, LiveKit, Deepgram, Groq, and Cartesia variables, then redeploy the API and voice-agent services.
+When ready for real outbound calls, choose `CALLING_PROVIDER=vobiz_sip`, set `MOCK_CALL_MODE=false`, add the required Vobiz SIP, LiveKit, Deepgram, Groq, and Cartesia variables, then redeploy the API and voice-agent services.
 
 For `vobiz_sip`, first create the LiveKit outbound SIP trunk from Vobiz credentials:
 

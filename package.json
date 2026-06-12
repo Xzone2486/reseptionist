@@ -8,14 +8,18 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm:dev --workspace @receptionist/api\" \"npm:dev --workspace @receptionist/web\"",
+    "dev": "concurrently \"npm:dev --workspace @receptionist/api\" \"npm:dev --workspace @receptionist/web\" \"npm:dev --workspace @receptionist/voice-agent\"",
     "dev:full": "concurrently \"npm:dev --workspace @receptionist/api\" \"npm:dev --workspace @receptionist/web\" \"npm:dev --workspace @receptionist/voice-agent\"",
     "dev:voice": "npm run dev --workspace @receptionist/voice-agent",
     "build": "npm run build -w @receptionist/shared && npm run build -w @receptionist/api && npm run build -w @receptionist/web && npm run build -w @receptionist/voice-agent",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "db:migrate": "npm run prisma:migrate --workspace @receptionist/api",
-    "db:seed": "npm run seed --workspace @receptionist/api"
+    "db:generate": "npx prisma generate --schema apps/api/prisma/schema.prisma",
+    "db:migrate": "npx prisma migrate dev --schema apps/api/prisma/schema.prisma",
+    "db:seed": "npm run seed --workspace @receptionist/api",
+    "db:reset": "npx prisma migrate reset --force --schema apps/api/prisma/schema.prisma && npm run db:seed",
+    "local:db:up": "docker compose up -d postgres redis",
+    "local:db:reset": "docker compose down -v && docker compose up -d postgres redis"
   },
   "devDependencies": {
     "concurrently": "^10.0.3",

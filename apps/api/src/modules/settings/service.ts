@@ -12,7 +12,7 @@ export const defaultSettings: Settings = {
   },
   retryRules: defaultRetryRules,
   voice: {
-    providerMode: (process.env.CALLING_PROVIDER as "mock" | "vobiz_sip" | "vobiz_api") || "mock",
+    providerMode: (process.env.CALLING_PROVIDER as "mock" | "vobiz_sip") || "mock",
     ttsVoiceId: process.env.CARTESIA_VOICE_ID || null,
     llmModel: process.env.GROQ_MODEL || "llama-3.1-8b-instant",
     interruptionEnabled: true,

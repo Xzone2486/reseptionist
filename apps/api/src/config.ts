@@ -1,12 +1,21 @@
 import dotenv from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
-dotenv.config({ path: "../../.env" });
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRootEnv = path.resolve(__dirname, "../../../.env");
+const localEnv = path.resolve(__dirname, "../.env");
 
+dotenv.config({ path: repoRootEnv });
+dotenv.config({ path: localEnv });
+
+if (process.env.MOCK_CALL_MODE === undefined && process.env.MOCK_CALLS !== undefined) {
+  process.env.MOCK_CALL_MODE = process.env.MOCK_CALLS;
+}
 const envSchema = z.object({
   NODE_ENV: z.string().default("development"),
-  DATABASE_URL: z.string().default("postgresql://postgres:postgres@localhost:5432/receptionist"),
+  DATABASE_URL: z.string().default("postgresql://receptionist:receptionist123@localhost:5432/receptionist?schema=public"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
   JWT_SECRET: z.string().default("dev-secret-change-me"),
   API_PORT: z.coerce.number().default(4000),
@@ -14,12 +23,9 @@ const envSchema = z.object({
   CLINIC_NAME: z.string().default("Demo Care Clinic"),
   CLINIC_ADDRESS: z.string().default("Clinic address not configured"),
   MOCK_MODE: z.coerce.boolean().default(true),
-  CALLING_PROVIDER: z.enum(["mock", "vobiz_sip", "vobiz_api"]).default("mock"),
+  CALLING_PROVIDER: z.enum(["mock", "vobiz_sip"]).default("mock"),
   MOCK_CALL_MODE: z.coerce.boolean().default(true),
   LIVEKIT_AGENT_NAME: z.string().default("doctor-receptionist-outbound"),
-  VOBIZ_AUTH_ID: z.string().optional(),
-  VOBIZ_AUTH_TOKEN: z.string().optional(),
-  VOBIZ_CALLER_ID: z.string().optional(),
   VOBIZ_SIP_DOMAIN: z.string().optional(),
   VOBIZ_USERNAME: z.string().optional(),
   VOBIZ_PASSWORD: z.string().optional(),

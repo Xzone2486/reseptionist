@@ -22,7 +22,7 @@ export const callStatuses = [
 
 export const slotStatuses = ["available", "held", "booked", "cancelled"] as const;
 export const campaignStatuses = ["draft", "running", "paused", "completed", "stopped"] as const;
-export const callingProviders = ["mock", "vobiz_sip", "vobiz_api"] as const;
+export const callingProviders = ["mock", "vobiz_sip"] as const;
 const optionalEmail = z.preprocess(
   (value) => value === "" ? undefined : value,
   z.string().email().optional().nullable()

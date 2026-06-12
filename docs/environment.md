@@ -15,21 +15,26 @@ Required for local mock mode:
 - `CLINIC_NAME`
 - `CLINIC_ADDRESS`
 
+Use these local database values:
+
+```env
+DATABASE_URL="postgresql://receptionist:receptionist123@localhost:5432/receptionist?schema=public"
+REDIS_URL="redis://localhost:6379"
+```
+
+If Postgres was previously started with different credentials, run `docker compose down -v` before recreating it. Docker keeps old users and passwords inside the named volume.
+
 Vobiz calling variables:
 
 - `LIVEKIT_URL`
 - `LIVEKIT_API_KEY`
 - `LIVEKIT_API_SECRET`
 - `LIVEKIT_AGENT_NAME`
-- `VOBIZ_AUTH_ID`
-- `VOBIZ_AUTH_TOKEN`
-- `VOBIZ_CALLER_ID`
 - `VOBIZ_SIP_DOMAIN`
 - `VOBIZ_USERNAME`
 - `VOBIZ_PASSWORD`
 - `VOBIZ_OUTBOUND_NUMBER`
 - `OUTBOUND_TRUNK_ID`
-- `VOBIZ_WEBHOOK_SECRET`
 - `DEEPGRAM_API_KEY`
 - `GROQ_API_KEY`
 - `CARTESIA_API_KEY`
@@ -39,7 +44,6 @@ Allowed `CALLING_PROVIDER` values:
 
 - `mock`
 - `vobiz_sip`
-- `vobiz_api`
 
 For Railway testing use `CALLING_PROVIDER=mock` and `MOCK_CALL_MODE=true`.
 

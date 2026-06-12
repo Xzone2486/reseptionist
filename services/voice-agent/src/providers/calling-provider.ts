@@ -10,7 +10,7 @@ export interface VoiceSessionInput {
 }
 
 export interface CallStartResult {
-  callingProvider: "mock" | "vobiz_sip" | "vobiz_api";
+  callingProvider: "mock" | "vobiz_sip";
   roomName?: string;
   providerCallId?: string;
   dispatchId?: string;
@@ -74,54 +74,9 @@ export class VobizSipCallingProvider implements CallingProvider {
   }
 }
 
-export class VobizApiCallingProvider implements CallingProvider {
-  async startOutboundCall(input: VoiceSessionInput) {
-    if (!config.VOBIZ_AUTH_ID || !config.VOBIZ_AUTH_TOKEN || !config.VOBIZ_CALLER_ID) {
-      throw new Error("Vobiz API mode requires VOBIZ_AUTH_ID, VOBIZ_AUTH_TOKEN, and VOBIZ_CALLER_ID.");
-    }
-    if (!input.phone) {
-      throw new Error("Vobiz API mode requires a lead phone number.");
-    }
-
-    // Vobiz public API details vary by account/product. Keep the call shape isolated here.
-    // Replace VOBIZ_API_BASE_URL or this path if Vobiz supplies a different endpoint.
-    const baseUrl = process.env.VOBIZ_API_BASE_URL || "https://api.vobiz.com";
-    const response = await fetch(`${baseUrl}/v1/calls`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Basic ${Buffer.from(`${config.VOBIZ_AUTH_ID}:${config.VOBIZ_AUTH_TOKEN}`).toString("base64")}`
-      },
-      body: JSON.stringify({
-        from: config.VOBIZ_CALLER_ID,
-        to: input.phone,
-        webhook_url: `${config.API_BASE_URL}/api/webhooks/vobiz/calls`,
-        machine_detection: true,
-        metadata: {
-          leadId: input.leadId,
-          attemptId: input.attemptId,
-          campaignId: input.campaignId
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Vobiz outbound call failed: ${response.status} ${await response.text()}`);
-    }
-
-    const data = await response.json() as Record<string, any>;
-    return {
-      callingProvider: "vobiz_api" as const,
-      providerCallId: String(data.call_id || data.callId || data.id),
-      startedAt: new Date().toISOString()
-    };
-  }
-}
-
 export function createCallingProvider(): CallingProvider {
   if (config.MOCK_CALL_MODE || config.CALLING_PROVIDER === "mock") return new MockCallingProvider();
-  if (config.CALLING_PROVIDER === "vobiz_sip") return new VobizSipCallingProvider();
-  return new VobizApiCallingProvider();
+  return new VobizSipCallingProvider();
 }
 
 export async function createVobizOutboundTrunk() {

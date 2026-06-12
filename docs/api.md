@@ -34,7 +34,6 @@ Calls:
 - `POST /webhooks/calls/:id/outcome`
 - `POST /webhooks/calls/:id/provider`
 - `POST /webhooks/calls/:id/transcript`
-- `POST /webhooks/vobiz/calls`
 
 Voice tools:
 
@@ -47,4 +46,3 @@ Voice tools:
 - `POST /tools/transfer_to_human`
 
 Voice-agent webhook and tool endpoints require `Authorization: Bearer VOICE_AGENT_SERVICE_TOKEN`.
-Vobiz webhooks use `VOBIZ_WEBHOOK_SECRET` through `x-vobiz-signature` or `x-webhook-secret` when configured.
