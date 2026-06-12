@@ -12,14 +12,17 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@livekit/rtc-node": "^0.13.29",
     "@receptionist/shared": "0.1.0",
     "bullmq": "^5.58.5",
     "dotenv": "^17.2.2",
     "livekit-server-sdk": "^2.15.4",
     "pino": "^9.9.5",
+    "ws": "^8.21.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "tsx": "^4.20.5",
     "vitest": "^3.2.4"
   }

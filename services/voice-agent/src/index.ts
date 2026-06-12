@@ -1,11 +1,13 @@
 import { Worker } from "bullmq";
 import pino from "pino";
-import { config } from "./config.js";
+import { config, validateRealModeConfig } from "./config.js";
 import { createCallingProvider } from "./providers/calling-provider.js";
 import { runMockSession } from "./agent/mock-session.js";
 import { toolsClient } from "./agent/tools-client.js";
+import { runLiveKitVoiceSession } from "./agent/livekit-session.js";
 
 const log = pino({ name: "voice-agent" });
+validateRealModeConfig();
 const provider = createCallingProvider();
 const isMockMode = config.MOCK_CALL_MODE || config.CALLING_PROVIDER === "mock";
 
@@ -33,8 +35,21 @@ new Worker(
       return { mock: true };
     }
 
-    // Real mode: LiveKit dispatch starts the room and this service should also run the room agent.
-    // TODO: join the room, stream Deepgram STT, call Groq with tool calls, stream Cartesia TTS, and post outcomes.
+    if (!providerCall.roomName) {
+      const reason = "LiveKit roomName missing from calling provider result.";
+      log.error({ attemptId, providerCall }, reason);
+      await toolsClient.saveOutcome(attemptId, { status: "failed", reason });
+      return { failed: true, reason };
+    }
+
+    await runLiveKitVoiceSession({
+      roomName: providerCall.roomName,
+      attemptId,
+      leadId,
+      campaignId,
+      phone,
+      email
+    });
     return { mock: false, callingProvider: providerCall.callingProvider, providerCallId: providerCall.providerCallId };
   },
   { connection: { url: config.REDIS_URL } }

@@ -14,16 +14,14 @@ if (process.env.MOCK_CALL_MODE === undefined && process.env.MOCK_CALLS !== undef
   process.env.MOCK_CALL_MODE = process.env.MOCK_CALLS;
 }
 
-const envBoolean = z
-  .string()
-  .optional()
-  .transform((value) => {
-    if (value === undefined) return false;
-
-    return ["true", "1", "yes", "on"].includes(
-      value.trim().toLowerCase()
-    );
-  });
+const envBoolean = z.preprocess(
+  (value) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value !== "string") return undefined;
+    return ["true", "1", "yes", "on"].includes(value.trim().toLowerCase());
+  },
+  z.boolean()
+);
 
 export const config = z.object({
   REDIS_URL: z.string().default("redis://localhost:6379"),
@@ -48,5 +46,25 @@ export const config = z.object({
 
   DEEPGRAM_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
-  CARTESIA_API_KEY: z.string().optional()
+  GROQ_MODEL: z.string().default("llama-3.1-8b-instant"),
+  CARTESIA_API_KEY: z.string().optional(),
+  CARTESIA_VOICE_ID: z.string().optional()
 }).parse(process.env);
+
+export function validateRealModeConfig() {
+  if (config.MOCK_CALL_MODE || config.CALLING_PROVIDER === "mock") return;
+
+  const missing = [
+    "LIVEKIT_URL",
+    "LIVEKIT_API_KEY",
+    "LIVEKIT_API_SECRET",
+    "OUTBOUND_TRUNK_ID",
+    "DEEPGRAM_API_KEY",
+    "GROQ_API_KEY",
+    "CARTESIA_API_KEY"
+  ].filter((key) => !process.env[key]);
+
+  if (missing.length) {
+    throw new Error(`Real Vobiz SIP mode is missing required config: ${missing.join(", ")}`);
+  }
+}
